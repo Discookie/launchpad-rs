@@ -5,3 +5,11 @@ authors = ["Discookie <matekos17@fazekas.hu>"]
 edition = "2018"
 
 [dependencies]
+midir = "0.5"
+# conrod = "0.61"
+# conrod_vulkano = "0.63"
+# conrod_winit = "0.63"
+hashbrown = "0.2"
+fnv = "1.0"
+crossbeam-channel = "0.3"
+smallvec = "0.6"
