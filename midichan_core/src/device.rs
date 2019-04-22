@@ -1,9 +1,19 @@
-use crate::messages::MidiMessage;
+use std::error::Error;
+
+use crate::message::MidiMessage;
 use crossbeam_channel::{Sender, Receiver};
 
 pub trait Controllable<R, T> {
     fn control_request(&self) -> Sender<R>;
     fn control_response(&self) -> Receiver<T>;
+}
+
+pub trait HasInput {
+    fn midi_in(&self) -> Receiver<MidiMessage>;
+}
+
+pub trait HasOutput {
+    fn midi_out(&self) -> Sender<MidiMessage>;
 }
 
 pub trait MidiDevice {
@@ -26,4 +36,8 @@ pub trait RoutingDevice {
     fn query_all_inputs(&self) -> Result<Vec<String>, String>;
     fn query_all_outputs(&self) -> Result<Vec<String>, String>;
     fn query_all(&self) -> Result<(Vec<String>, Vec<String>), String>;
+}
+
+pub trait Application {
+    fn run(&mut self) -> Result<(), Box<Error>>;
 }

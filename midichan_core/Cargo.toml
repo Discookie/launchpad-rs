@@ -1,0 +1,12 @@
+[package]
+name = "midichan_core"
+version = "0.1.0"
+authors = ["Discookie <matekos17@fazekas.hu>"]
+edition = "2018"
+
+[lib]
+name = "midichan_core"
+path = "./src/lib.rs"
+
+[dependencies]
+crossbeam-channel = "0.3"

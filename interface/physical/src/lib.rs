@@ -1,3 +1,10 @@
+#[macro_use]
+extern crate crossbeam_channel;
+
+extern crate midichan_core;
+
+#[macro_use]
+mod macros;
 
 use std::time::Duration;
 use std::error::Error;
@@ -7,8 +14,8 @@ use hashbrown::HashMap;
 use crossbeam_channel::{bounded, Sender, Receiver};
 use midir::{MidiInput, MidiOutput, Ignore};
 
-use crate::messages::{DeviceRequest, DeviceResponse, MidiMessage};
-use crate::control::{Controllable, MidiDevice};
+use midichan_core::message::{DeviceRequest, DeviceResponse, MidiMessage};
+use midichan_core::device::{Controllable, HasInput, HasOutput, MidiDevice};
 
 const TIMEOUT: Duration = Duration::from_secs(1);
 
@@ -20,7 +27,7 @@ pub struct InputDevice {
 }
 
 impl InputDevice {
-    pub fn start() -> InputDevice {
+    pub fn new() -> InputDevice {
         let (exported_send, thread_recv) = bounded(0);
         let (thread_send, exported_recv) = bounded(2);
         let (thread_midi, exported_midi) = bounded(128);
@@ -31,8 +38,10 @@ impl InputDevice {
 
         InputDevice{control_request: exported_send, control_response: exported_recv, midi_in: exported_midi}
     }
+}
 
-    pub fn midi_in(&self) -> Receiver<MidiMessage> {
+impl HasInput for InputDevice {
+    fn midi_in(&self) -> Receiver<MidiMessage> {
         self.midi_in.clone()
     }
 }
@@ -222,7 +231,7 @@ pub struct OutputDevice {
 }
 
 impl OutputDevice {
-    pub fn start() -> OutputDevice {
+    pub fn new() -> OutputDevice {
         let (exported_send, thread_recv) = bounded(0);
         let (thread_send, exported_recv) = bounded(2);
         let (exported_midi, thread_midi) = bounded(128);
@@ -233,8 +242,10 @@ impl OutputDevice {
 
         OutputDevice{control_request: exported_send, control_response: exported_recv, midi_out: exported_midi}
     }
+}
 
-    pub fn midi_out(&self) -> Sender<MidiMessage> {
+impl HasOutput for OutputDevice {
+    fn midi_out(&self) -> Sender<MidiMessage> {
         self.midi_out.clone()
     }
 }

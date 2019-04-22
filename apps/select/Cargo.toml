@@ -1,0 +1,15 @@
+[package]
+name = "select"
+version = "0.1.0"
+authors = ["Discookie <matekos17@fazekas.hu>"]
+edition = "2018"
+
+[lib]
+name = "select"
+path = "./src/lib.rs"
+
+[dependencies]
+hashbrown = "0.2"
+crossbeam-channel = "0.3"
+midichan_core = { path = "../../midichan_core", version = "0.1" }
+launchpad = { path = "../../devices/launchpad", version = "0.1" }

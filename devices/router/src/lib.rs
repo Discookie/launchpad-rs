@@ -1,3 +1,6 @@
+#[macro_use]
+mod macros;
+
 use std::time::Duration;
 use std::error::Error;
 use std::thread;
@@ -5,8 +8,8 @@ use std::thread;
 use hashbrown::HashMap;
 use crossbeam_channel::{bounded, Sender, Receiver, Select};
 
-use crate::messages::{RouterRequest, RouterResponse, MidiMessage};
-use crate::control::{Controllable, RoutingDevice};
+use midichan_core::message::{RouterRequest, RouterResponse, MidiMessage};
+use midichan_core::device::{Controllable, RoutingDevice};
 
 const TIMEOUT: Duration = Duration::from_secs(1);
 
@@ -30,7 +33,7 @@ impl Router {
         Router{control_request: exported_send, control_response: exported_recv}
     }
 
-    pub fn by_device() -> Router {
+    pub fn split_by_device() -> Router {
         fn by_device_func(dev: &mut MidiMessage) -> Vec<String> {
             vec!(dev.device.clone())
         }
@@ -49,8 +52,8 @@ impl Router {
         Router::with_function(on_off_func)
     }
 
-    pub fn splitter() -> Router {
-        fn all_func(dev: &mut MidiMessage) -> Vec<String> {
+    pub fn mirror_all() -> Router {
+        fn all_func(_dev: &mut MidiMessage) -> Vec<String> {
             vec!("all".to_string())
         }
         
