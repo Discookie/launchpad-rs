@@ -28,7 +28,7 @@ pub struct InputDevice {
 
 impl InputDevice {
     pub fn new() -> InputDevice {
-        let (exported_send, thread_recv) = bounded(0);
+        let (exported_send, thread_recv) = bounded(1);
         let (thread_send, exported_recv) = bounded(2);
         let (thread_midi, exported_midi) = bounded(128);
 
@@ -132,7 +132,7 @@ fn input_wrapper(midi_out: Sender<MidiMessage>, control_request: Receiver<Device
     };
 }
 
-fn input_thread(midi_out: Sender<MidiMessage>, control_request: &Receiver<DeviceRequest>, control_response: &Sender<DeviceResponse>) -> Result<(), Box<Error>> {
+fn input_thread(midi_out: Sender<MidiMessage>, control_request: &Receiver<DeviceRequest>, control_response: &Sender<DeviceResponse>) -> Result<(), Box<dyn Error>> {
     let mut map = HashMap::new();
 
     loop {
@@ -333,7 +333,7 @@ fn output_wrapper(midi_in: Receiver<MidiMessage>, control_request: Receiver<Devi
     };
 }
 
-fn output_thread(midi_in: Receiver<MidiMessage>, control_request: &Receiver<DeviceRequest>, control_response: &Sender<DeviceResponse>) -> Result<(), Box<Error>> {
+fn output_thread(midi_in: Receiver<MidiMessage>, control_request: &Receiver<DeviceRequest>, control_response: &Sender<DeviceResponse>) -> Result<(), Box<dyn Error>> {
     let mut map = HashMap::new();
 
     loop {
@@ -410,9 +410,12 @@ fn output_thread(midi_in: Receiver<MidiMessage>, control_request: &Receiver<Devi
             recv(midi_in) -> msg => {
                 let midi_msg = msg?;
                 if let Some(midi_out) = map.get_mut(&midi_msg.device) {
+
                     if let Err(err) = midi_out.send(&midi_msg.to_raw()) {
                         control_response.send(
                             DeviceResponse::Error( format!("output handler: failed to add device: {}", err.to_string()) ))?
+                    } else {
+                        //println!("Sent! ({:?})", midi_msg.to_raw());
                     }
                 }
             },

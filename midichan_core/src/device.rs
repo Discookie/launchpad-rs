@@ -39,5 +39,5 @@ pub trait RoutingDevice {
 }
 
 pub trait Application {
-    fn run(&mut self) -> Result<(), Box<Error>>;
+    fn run(&mut self) -> Result<(), Box<dyn Error>>;
 }

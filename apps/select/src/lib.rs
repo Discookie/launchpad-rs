@@ -6,7 +6,7 @@ use launchpad::{Launchpad, Color};
 
 
 pub struct Select {
-    choices: Vec<Box<Application>>,
+    choices: Vec<Box<dyn Application>>,
     launchpad: Launchpad
 }
 
@@ -25,11 +25,11 @@ impl Select {
         Select{choices: Vec::new(), launchpad: launchpad}
     }
 
-    pub fn add(&mut self, choice: Box<Application>) {
+    pub fn add(&mut self, choice: Box<dyn Application>) {
         self.choices.push(choice);
     }
 
-    pub fn display_choices(&self) -> Result<(), Box<Error>> {
+    pub fn display_choices(&self) -> Result<(), Box<dyn Error>> {
         self.launchpad.clear()?;
         self.launchpad.set(7, 8, &Color::new(3, 0))?;
 
@@ -42,7 +42,7 @@ impl Select {
 }
 
 impl Application for Select {
-    fn run(&mut self) -> Result<(), Box<Error>> {
+    fn run(&mut self) -> Result<(), Box<dyn Error>> {
         let midi_in = self.launchpad.input();
         loop {
             self.display_choices()?;

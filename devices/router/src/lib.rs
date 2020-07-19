@@ -191,8 +191,8 @@ impl RoutingDevice for Router {
 impl Drop for Router {
     fn drop(&mut self) {
         self.control_request.send(
-            RouterRequest::Shutdown ).ok();
-        self.control_response.recv_timeout(TIMEOUT).ok();
+            RouterRequest::Shutdown ).unwrap();
+        self.control_response.recv_timeout(TIMEOUT).unwrap();
     }
 }
 
@@ -210,7 +210,7 @@ fn router_wrapper  <T: 'static + Send + Copy + Fn(&mut MidiMessage) -> Vec<Strin
 }
 
 fn router_thread   <T: 'static + Send + Copy + Fn(&mut MidiMessage) -> Vec<String>>
-                (router_func: T, control_request: &Receiver<RouterRequest>, control_response: &Sender<RouterResponse>) -> Result<(), Box<Error>> {
+                (router_func: T, control_request: &Receiver<RouterRequest>, control_response: &Sender<RouterResponse>) -> Result<(), Box<dyn Error>> {
     let mut in_map = HashMap::new();
     let mut out_map = HashMap::new();
 
@@ -288,6 +288,8 @@ fn router_thread   <T: 'static + Send + Copy + Fn(&mut MidiMessage) -> Vec<Strin
                 },
 
                 RouterRequest::Shutdown => {
+                    control_response.send(
+                        RouterResponse::Ok)?;
                     return Ok(());
                 },
             }
@@ -302,7 +304,7 @@ fn router_thread   <T: 'static + Send + Copy + Fn(&mut MidiMessage) -> Vec<Strin
             for target in targets {
                 if target == "all" {
                     for output in out_map.values() {
-                        output.send(msg.clone()).is_ok();
+                        output.send(msg.clone()).ok();
                     }
                 } else {
                     out_map.get(&target).map(|x| x.send(msg.clone()));

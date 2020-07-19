@@ -53,7 +53,7 @@ impl Launchpad {
         self.output.clone()
     }
 
-    pub fn clear(&self) -> Result <(), Box<Error>> {
+    pub fn clear(&self) -> Result <(), Box<dyn Error>> {
         Ok(self.output.send(
             MidiMessage{
                 device: self.name.clone(),
@@ -61,12 +61,13 @@ impl Launchpad {
                 channel: 0,
                 msg_type: MessageType::CC,
                 key: 0,
-                velocity: 0
+                velocity: 0,
+                sysex: None
             }
         )?)
     }
 
-    pub fn set(&self, x: u8, y: u8, color: &Color) -> Result<(), Box<Error>> {
+    pub fn set(&self, x: u8, y: u8, color: &Color) -> Result<(), Box<dyn Error>> {
         Ok(self.output.send(
             MidiMessage{
                 device: self.name.clone(),
@@ -80,12 +81,13 @@ impl Launchpad {
                     8 => 0x68 + x,
                     _ => y * 0x10 + x
                 },
-                velocity: color.color()
+                velocity: color.color(),
+                sysex: None
             }
         )?)
     }
 
-    pub fn fill_step(&self, first: &Color, second: &Color) -> Result<(), Box<Error>> {
+    pub fn fill_step(&self, first: &Color, second: &Color) -> Result<(), Box<dyn Error>> {
         Ok(self.output.send(
             MidiMessage{
                 device: self.name.clone(),
@@ -93,12 +95,13 @@ impl Launchpad {
                 channel: 5,
                 msg_type: MessageType::NoteOn,
                 key: first.color(),
-                velocity: second.color()
+                velocity: second.color(),
+                sysex: None
             }
         )?)
     }
 
-    pub fn fill(&self, grid: Vec<Vec<Color>>) -> Result<(), Box<Error>> {
+    pub fn fill(&self, grid: Vec<Vec<Color>>) -> Result<(), Box<dyn Error>> {
         let mut temp = Color::new(0, 0);
         let mut has_val = false;
         for x_ind in 0..grid.len() {

@@ -4,8 +4,15 @@ members = [
     "interface/physical",
     "devices/router",
     "devices/launchpad",
+    "devices/launchpad-x",
+    "web-ui/host",
     "apps/simple",
-    "apps/send_macro",
+    "apps/chain_reaction",
+    # "apps/send_macro",
     "apps/select",
+    "apps/elite_dangerous",
+    "apps/launchpad-x/select",
+    "apps/launchpad-x/simple",
+    "apps/launchpad-x/chain-reaction",
     "main"
 ]

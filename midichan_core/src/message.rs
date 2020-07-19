@@ -9,8 +9,9 @@ macro_rules! num_to_enum {
     });
 }
 
-#[derive(Eq, PartialEq, Clone)]
+#[derive(Eq, PartialEq, Clone, Debug)]
 pub enum MessageType {
+    SysEx = 0x70,
     NoteOff = 0x80,
     NoteOn = 0x90,
     NoteVelocity = 0xA0,
@@ -24,7 +25,7 @@ pub enum MessageType {
 impl MessageType {
     pub fn from_u8(num: u8) -> MessageType {
         num_to_enum!(
-            num => MessageType{NoteOff, NoteOn, NoteVelocity, CC, PC, CCVelocity, PitchBend};
+            num => MessageType{SysEx, NoteOff, NoteOn, NoteVelocity, CC, PC, CCVelocity, PitchBend};
             MessageType::Unknown
         )
     }
@@ -40,29 +41,48 @@ impl MessageType {
     // EndOfSysEx = 0xF7
 // }
 
-#[derive(Eq, PartialEq, Clone)]
+#[derive(Eq, PartialEq, Clone, Debug)]
 pub struct MidiMessage {
     pub device: String,
     pub timestamp: u64,
     pub channel: u8,
     pub msg_type: MessageType,
     pub key: u8,
-    pub velocity: u8
+    pub velocity: u8,
+    pub sysex: Option<Vec<u8>>
 }
 
 impl MidiMessage {
     pub fn from_raw(name: &str, timestamp: u64, slice: &[u8]) -> MidiMessage {
-        let channel = slice[0] & 0x0F;
+        //println!("Msg get!: {:?}", slice);
         let msg_type = slice[0] & 0xF0;
-        let key = slice[1];
-        let velocity = slice[2];
-        MidiMessage{
-            device: name.to_string(),
-            timestamp: timestamp,
-            channel: channel,
-            msg_type: MessageType::from_u8(msg_type),
-            key: key,
-            velocity: velocity
+
+        if matches!(msg_type, 0x70 | 0xD0) {
+            let mut vec= Vec::new();
+            vec.extend_from_slice(&slice[1..slice.len() - 1]);
+
+            MidiMessage{
+                device: name.to_string(),
+                timestamp,
+                channel: 0,
+                msg_type: MessageType::from_u8(msg_type),
+                key: 0,
+                velocity: 0,
+                sysex: Some(vec)
+            }
+        } else {
+            let channel = slice[0] & 0x0F;
+            let key = slice[1];
+            let velocity = slice[2];
+            MidiMessage{
+                device: name.to_string(),
+                timestamp,
+                channel,
+                msg_type: MessageType::from_u8(msg_type),
+                key,
+                velocity,
+                sysex: None
+            }
         }
     }
 
@@ -73,7 +93,8 @@ impl MidiMessage {
             channel: 0,
             msg_type: MessageType::NoteOn,
             key: 0,
-            velocity: 0
+            velocity: 0,
+            sysex: None
         }
     }
 
@@ -103,7 +124,11 @@ impl MidiMessage {
     }
 
     pub fn to_raw(&self) -> Vec<u8> {
-        vec![(self.msg_type.clone() as u8) | self.channel, self.key, self.velocity]
+        match self.msg_type {
+            MessageType::SysEx => self.sysex.to_owned().unwrap_or_default(),
+            _ => vec![(self.msg_type.clone() as u8) | self.channel, self.key, self.velocity]
+        }
+        
     }
 }
 

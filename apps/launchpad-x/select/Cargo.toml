@@ -1,0 +1,15 @@
+[package]
+name = "launchpad-x-select"
+version = "0.1.0"
+authors = ["Discookie <matekos17@fazekas.hu>"]
+edition = "2018"
+
+[lib]
+name = "select_x"
+path = "./src/lib.rs"
+
+[dependencies]
+hashbrown = "0.2"
+crossbeam-channel = "0.3"
+midichan_core = { path = "../../../midichan_core", version = "0.1" }
+launchpad-x = { path = "../../../devices/launchpad-x", version = "0.1" }
